@@ -1,26 +1,11 @@
 import { getEpisodesOfShow, searchShowsByTerm } from "./models";
 
-const $showsList = document.querySelector("#showsList") as HTMLTableSectionElement;
+const $showsList = document.querySelector("#showsList") as HTMLElement;
 const $episodesList = document.querySelector("#episodesList") as HTMLUListElement;
-const $episodesArea = document.querySelector("#episodesArea") as HTMLTableSectionElement;
+const $episodesArea = document.querySelector("#episodesArea") as HTMLElement;
 const $searchForm = document.querySelector("#searchForm") as HTMLFormElement;
 const $term = document.querySelector("#searchForm-term") as HTMLInputElement;
 
-type tShow = {
-  id: number;
-  name: string;
-  summary: string;
-  image: string;
-
-};
-
-type episode = {
-  id: string;
-  name: string;
-  season: number;
-  number: number;
-
-};
 
 /** Given list of shows, create markup for each and to DOM */
 
@@ -54,9 +39,9 @@ function populateShows(shows: tShow[]): void {
 
 async function searchForShowAndDisplay(): Promise<void> {
   const searchTerm = $term.value;
-  const shows = await searchShowsByTerm(searchTerm);
+  const shows: tShow[] = await searchShowsByTerm(searchTerm);
 
-  $episodesArea.innerHTML = "";
+  $episodesArea.classList.add("hidden");
   populateShows(shows);
 }
 
@@ -68,7 +53,7 @@ $searchForm.addEventListener("submit", async function (evt) {
 
 /** Given list of episodes, create markup for each and to DOM */
 
-function populateEpisodes(episodes: episode[]) {
+function populateEpisodes(episodes: tEpisode[]) : void {
   $episodesList.innerHTML = "";
 
   for (const episode of episodes) {
@@ -86,16 +71,18 @@ function populateEpisodes(episodes: episode[]) {
 
 /** Handle click on episodes button: get episodes for show and display */
 
-async function getEpisodesAndDisplay(evt: MouseEvent): Promise<void> {
-  const $clicked = evt.target as HTMLTableSectionElement;
-  if (!$clicked.classList.contains(".Show-getEpisodes")) return;
+async function getEpisodesAndDisplay(evt: Event): Promise<void> {
+  const $clicked = evt.target as HTMLElement;
+  if (!$clicked.classList.contains("Show-getEpisodes")) return;
+
 
   // here's one way to get the ID of the show: search "closest" ancestor
   // with the class of .Show (which is put onto the enclosing div, which
   // has the .data-show-id attribute).
   const $closest = ($clicked).closest(".Show") as HTMLDivElement;
   const showId = Number($closest.getAttribute("data-show-id"));
-  const episodes: episode[] = await getEpisodesOfShow(showId);
+  const episodes: tEpisode[] = await getEpisodesOfShow(showId);
+
   populateEpisodes(episodes);
 }
 
